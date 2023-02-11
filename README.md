@@ -1,4 +1,4 @@
-# Interferometers
+# Interferometers.jl
 
 Interferometers package helps to simulate interferometric signals and to test phase recovery techniques.
 
