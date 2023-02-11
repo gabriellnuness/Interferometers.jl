@@ -1,0 +1,13 @@
+name = "Interferometers"
+uuid = "f258f33b-4c40-4009-a9dc-31b399225700"
+authors = ["Gabriel Nunes <nunesgfs@gmail.com> and contributors"]
+version = "0.1.0"
+
+[compat]
+julia = "1"
+
+[extras]
+Test = "8dfed614-e22c-5e08-85e1-65c5234f0b40"
+
+[targets]
+test = ["Test"]
