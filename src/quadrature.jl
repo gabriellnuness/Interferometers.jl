@@ -41,3 +41,32 @@ function quadrature_fit(signal_1::Vector, signal_2::Vector)
     (phase, gain_ratio, offset_1, offset_2)
 
 end
+
+
+"""
+[cos_signal sin_signal] = quadrature_set(alpha, r, p, q)
+
+This function is a subset of fit_quadrature.m function
+the inputs are the fitted values necessary to correct the
+quadrature.
+
+Input: 
+    phase                           -> Phase difference from quadrature (in rad)
+    gain_ratio                      -> Gain proportion between signal_1 and signal_2, gain_ratio = A1*V1/(A2*V2);
+    offset_1, offset_2              -> Offsets of signal_1 and signal_2.
+
+Output: cosine signal,
+            sine signal.
+
+ref: Felão, "High gain approach and sliding mode control
+      applied to quadrature interferometer", Thesis, UNESP,
+      2019. https://repositorio.unesp.br/handle/11449/190782.
+"""
+function quadrature_set(signal_1, signal_2, phase, gain_ratio, offset_1, offset_2)
+
+    # Thesis: eq. (43) and (44)
+    cos_signal = @. signal_1 - offset_1;
+    sin_signal = @. (cos_signal*sin(phase) + gain_ratio*(signal_2-offset_2)) / cos(phase);
+
+    (cos_signal, sin_signal)
+end
