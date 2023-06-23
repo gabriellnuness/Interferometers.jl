@@ -23,6 +23,8 @@ function quadrature_fit(signal_1::Vector, signal_2::Vector)
       
     # thesis: eq (49)
     # A*signal_1^2 + B*signal_2^2 + C*signal_1*signal_2 + D*signal_1 + E*signal_2 = 1
+    @assert size(signal_1) == size(signal_2)
+
     X = hcat(signal_1.^2, signal_2.^2, signal_1.*signal_2, signal_1, signal_2)
 
     I = ones(length(signal_1)) #
@@ -39,7 +41,6 @@ function quadrature_fit(signal_1::Vector, signal_2::Vector)
     offset_2     = (2*A*E-D*C) / (C^2-4*A*B)
     
     (phase, gain_ratio, offset_1, offset_2)
-
 end
 
 
@@ -69,4 +70,37 @@ function quadrature_set(signal_1, signal_2, phase, gain_ratio, offset_1, offset_
     sin_signal = @. (cos_signal*sin(phase) + gain_ratio*(signal_2-offset_2)) / cos(phase);
 
     (cos_signal, sin_signal)
+end
+
+
+"""
+(signal_1_cos, signal_2_sin) = check_ellipse_rotation(signal_1, signal_2, δ)
+
+Check if signal is representative of a cosine or sine
+Make the first signal the cosine version.
+The calculation is done through the rotation direction of the Lissajous figure
+if x: cos and y: sin, than the direction is counter clockwise.
+The rotation direction is measured by the cross product of vectors.
+
+"""
+function check_ellipse_rotation(x::Vector, y::Vector, δ::Int)
+    
+    p1 = 1
+    p2 = p1 + δ
+    p3 = p2 + δ
+    vector_1 = [x[p1]-x[p2]; y[p1]-y[p2]; 0]
+    vector_2 = [x[p2]-x[p3]; y[p2]-y[p3]; 0]
+    vec_prod = cross(vector_1, vector_2)
+
+    if vec_prod[3] <= 0
+    # z-vector entering the screen
+        x_cos = y
+        y_sin = x
+
+        println("Inverted by check_ellipse_rotation()")
+        return (x_cos, y_sin)
+    end
+    
+    println("Not inverted by check_ellipse_rotation()")
+    (x, y)
 end

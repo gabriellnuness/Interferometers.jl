@@ -1,11 +1,14 @@
 module Interferometers
 
+using LinearAlgebra
+
 # Simulation functions
 export michelson
 export sagnac
 # Phase recovery functions
 export phase_atan
 export phase_highgain
+export check_ellipse_rotation
 export quadrature_fit
 export quadrature_set
 
