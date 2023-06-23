@@ -15,8 +15,7 @@ export quadrature_set
 
 include("michelson.jl")
 include("sagnac.jl")
-include("phase_highgain.jl")
-include("phase_atan.jl")
+include("phase_retrieval.jl")
 include("quadrature.jl")
 
 end
