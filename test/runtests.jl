@@ -102,15 +102,20 @@ end
     f = 60
     τ = 1/f
     t = 0 : τ/1000 : τ*3
+
     freq_mod = 2*f
-    
-    Δϕ = @. 10π*sin(2π*freq_mod*t) + 0.0*π
+    amp_mod = 10π
+    dc_mod = 0.0*π
+
+    Δϕ = @. amp_mod*sin(2π*freq_mod*t) + dc_mod
     signal_cos = cos.(Δϕ)
     signal_sin = sin.(Δϕ)
 
     # arctangent test    
     (phase, phase_offset) = phase_atan(signal_cos, signal_sin)
 
+
+    # Plot arctangent method
     _, ax = subplots(3,1)
     ax[1].plot(t, signal_cos)
         ax[1].set_ylabel("signal_cos")
@@ -119,17 +124,20 @@ end
     ax[3].plot(t, Δϕ, linewidth=5,color="black",alpha=0.2)
     ax[3].plot(t, phase)
         ax[3].set_ylabel("Phase retrieved") 
-        str = @sprintf("atan:%.2fπ", (phase_offset/π))
+        str = @sprintf("phase offset:%.3fπ", (phase_offset/π))
         ax[3].legend(["Δϕ",str])
     suptitle("arc tangent method")
 
 
     # High gain test    
     dt = t[2]-t[1]
-    gain = 2e4
-    e = 1e-4
-    (phase, phase_offset) = phase_highgain(signal_cos, signal_sin, dt, gain, e)
+    gain = 4e4
+    sigmoid_factor = 1e-1 # 0 = signal function
+    (phase, phase_offset) = phase_highgain(signal_cos, signal_sin, dt, gain, sigmoid_factor)
 
+
+
+    # Plot sliding modes method
     _, ax = subplots(3,1)
     ax[1].plot(t, signal_cos)
         ax[1].set_ylabel("signal_cos")
@@ -138,11 +146,9 @@ end
     ax[3].plot(t, Δϕ, linewidth=5,color="black",alpha=0.2)
     ax[3].plot(t, (phase .- phase_offset))
         ax[3].set_ylabel("Phase retrieved") 
-        str = @sprintf("atan:%.2fπ", (phase_offset/π))
+        str = @sprintf("phase offset:%.3fπ", (phase_offset/π))
         ax[3].legend(["Δϕ",str])
     suptitle("sliding modes method")
-
-
 
 
     
