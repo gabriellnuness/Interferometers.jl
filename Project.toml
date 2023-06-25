@@ -1,7 +1,7 @@
 name = "Interferometers"
 uuid = "f258f33b-4c40-4009-a9dc-31b399225700"
 authors = ["Gabriel Nunes <nunesgfs@gmail.com>"]
-version = "0.1.0"
+version = "0.1.1"
 
 [deps]
 LinearAlgebra = "37e2e46d-f89d-539d-b4ee-838fcccc9c8e"
