@@ -73,16 +73,17 @@ end
 
 
 """
-(arr_1_cos, arr_2_sin) = check_ellipse_rotation(arr_1, arr_2, δ)
+(arr_1_cos, arr_2_sin) = make_cos_first(arr_1, arr_2, δ)
 
 Check if signal is representative of a cosine or sine
 Make the first signal the cosine version.
+
 The calculation is done through the rotation direction of the Lissajous figure
-if x: cos and y: sin, than the direction is counter clockwise.
+if x: cos and y: sin, than the rotation direction is counter clockwise.
 The rotation direction is measured by the cross product of vectors.
 
 """
-function check_ellipse_rotation(arr_1::Vector, arr_2::Vector, δ::Int)
+function make_cos_first(arr_1::Vector, arr_2::Vector, δ::Int)
     
     p1 = 1
     p2 = p1 + δ
@@ -96,10 +97,10 @@ function check_ellipse_rotation(arr_1::Vector, arr_2::Vector, δ::Int)
         arr_1_cos = arr_2
         arr_2_sin = arr_1
 
-        println("Inverted by check_ellipse_rotation()")
+        println("Inverted by make_cos_first()")
         return (arr_1_cos, arr_2_sin)
     end
     
-    println("Not inverted by check_ellipse_rotation()")
+    println("Not inverted by make_cos_first()")
     (arr_1, arr_2)
 end

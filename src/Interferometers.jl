@@ -8,7 +8,7 @@ export sagnac
 # Phase recovery functions
 export phase_atan
 export phase_highgain
-export check_ellipse_rotation
+export make_cos_first
 export quadrature_fit
 export quadrature_set
 

@@ -29,11 +29,11 @@ end
     cosine = @. dc1 + A1*cos(2π*10*t + deg2rad(0))
     sine = @. dc2 + A2*sin(2π*10*t + deg2rad(0))
     δ = 10
-    (signal_cos, signal_sin) = check_ellipse_rotation(cosine, sine, δ)
+    (signal_cos, signal_sin) = make_cos_first(cosine, sine, δ)
     @test cosine == signal_cos
     @test sine == signal_sin
 
-    (signal_cos, signal_sin) = check_ellipse_rotation(sine, cosine, δ)
+    (signal_cos, signal_sin) = make_cos_first(sine, cosine, δ)
     @test cosine == signal_cos
     @test sine == signal_sin
 
@@ -43,7 +43,7 @@ end
     signal_1_orig = @. dc1 + A1*cos(2π*10*t + deg2rad(ϕ1))
     signal_2_orig = @. dc2 + A2*cos(2π*10*t + deg2rad(ϕ2))
     # correcting representation of sine and cosine
-    (signal_1, signal_2) = check_ellipse_rotation(signal_1_orig, signal_2_orig, δ)
+    (signal_1, signal_2) = make_cos_first(signal_1_orig, signal_2_orig, δ)
     
     (phase, gain_ratio, offset_1, offset_2) = quadrature_fit(signal_1, signal_2)
 
@@ -72,13 +72,13 @@ end
 
 
 
-    # inverting signals
+    # non pure sine and cosine test
     ϕ1 = -60
     ϕ2 = 60
     signal_1_orig = @. dc1 + A1*cos(2π*10*t + deg2rad(ϕ1))
     signal_2_orig = @. dc2 + A2*cos(2π*10*t + deg2rad(ϕ2))
     δ = 10
-    (signal_1, signal_2) = check_ellipse_rotation(signal_1_orig, signal_2_orig, δ)
+    (signal_1, signal_2) = make_cos_first(signal_1_orig, signal_2_orig, δ)
     # fitting quadrature
     (phase, gain_ratio, offset_1, offset_2) = quadrature_fit(signal_1, signal_2)
     # setting quadrature
