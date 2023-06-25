@@ -3,6 +3,10 @@ using Test
 using PyPlot
 using Printf
 
+
+
+
+
 @testset "Simulation" begin
 
     @test michelson(0, 1, 1) == 2
@@ -12,9 +16,11 @@ using Printf
 
 end
 
+
+
+
 @testset "Quadrature" begin
 
-    threshold = 1e-10
     t = 0:0.001:0.5
     dc1 = 1; A1 = 1;
     dc2 = 2; A2 = 2;
@@ -57,10 +63,14 @@ end
         legend(["Original", "In quadrature"])
         title("Not inverted")
 
-    @test rad2deg(phase) - (ϕ1-ϕ2 - 90) <= threshold
-    @test abs(A1/A2 - gain_ratio) <= threshold
-    @test abs(offset_1 - A1) <= threshold
-    @test abs(offset_2 - A2) <= threshold
+    @test(rad2deg(phase) ≈ ϕ1-ϕ2 - 90, atol=1e-10)
+    @test(A1/A2 ≈ gain_ratio, atol=1e-10)
+    @test(offset_1 ≈ A1, atol=1e-10)
+    @test(offset_2 ≈ A2, atol=1e-10)
+
+
+
+
 
     # inverting signals
     ϕ1 = -60
@@ -74,10 +84,10 @@ end
     # setting quadrature
     (signal_cos, signal_sin) = quadrature_set(signal_1, signal_2, phase, gain_ratio, offset_1, offset_2)
     
-    @test rad2deg(phase) - (ϕ2-ϕ1 - 90) <= threshold # inverted signals
-    @test abs(A2/A1 - gain_ratio) <= threshold
-    @test abs(offset_1 - A2) <= threshold
-    @test abs(offset_2 - A1) <= threshold
+    @test(rad2deg(phase) ≈ ϕ2-ϕ1 - 90, atol=1e-10) # inverted signals
+    @test(A2/A1 ≈ gain_ratio, atol=1e-10)
+    @test(offset_1 ≈ A2, atol=1e-10)
+    @test(offset_2 ≈ A1, atol=1e-10)
 
     figure()
     plot(signal_1_orig, signal_2_orig) # original signal
@@ -95,13 +105,16 @@ end
 end
 
 
-@testset "Interferometric phase recovery" begin
-    close("all")
+
+
+
+
+@testset "Arctangent phase retrieval" begin
 
     # Testing with pure sine and cosine with pure frequency
     f = 60
     τ = 1/f
-    t = 0 : τ/1000 : τ*3
+    t = 0 : τ/1000 : τ*2
 
     freq_mod = 2*f
     amp_mod = 10π
@@ -113,6 +126,10 @@ end
 
     # arctangent test    
     (phase, phase_offset) = phase_atan(signal_cos, signal_sin)
+
+    # test modulation signal retrieval
+    @test maximum((Δϕ - phase)/Δϕ) <= 1e-10
+    @test dc_mod - phase_offset <= 1e-10
 
 
     # Plot arctangent method
@@ -129,12 +146,50 @@ end
     suptitle("arc tangent method")
 
 
+
+
+    # dc offset
+    dc_mod = 0.1*π
+
+    Δϕ = @. amp_mod*sin(2π*freq_mod*t) + dc_mod
+    signal_cos = cos.(Δϕ)
+    signal_sin = sin.(Δϕ)
+
+    # arctangent test    
+    (phase, phase_offset) = phase_atan(signal_cos, signal_sin)
+
+    # test modulation signal retrieval
+    @test maximum((Δϕ - phase)/Δϕ) <= 1e-10
+    @test dc_mod - phase_offset <= 1e-10
+
+
+
+end
+
+@testset "Sliding modes phase retrieval" begin
+
+    # Testing with pure sine and cosine with pure frequency
+    f = 60
+    τ = 1/f
+    t = 0 : τ/1000 : τ*2
+
+    freq_mod = 2*f
+    amp_mod = 10π
+    dc_mod = 0.0*π
+
+    Δϕ = @. amp_mod*sin(2π*freq_mod*t) + dc_mod
+    signal_cos = cos.(Δϕ)
+    signal_sin = sin.(Δϕ)
+    
     # High gain test    
     dt = t[2]-t[1]
     gain = 4e4
     sigmoid_factor = 1e-1 # 0 = signal function
     (phase, phase_offset) = phase_highgain(signal_cos, signal_sin, dt, gain, sigmoid_factor)
 
+    # test modulation signal retrieval
+    @test maximum((Δϕ - phase)/Δϕ) <= 100e-6 
+    @test(dc_mod ≈ phase_offset, atol=1e-2)
 
 
     # Plot sliding modes method
@@ -149,7 +204,25 @@ end
         str = @sprintf("phase offset:%.3fπ", (phase_offset/π))
         ax[3].legend(["Δϕ",str])
     suptitle("sliding modes method")
-
+    
 
     
+    # Testing with pure sine and cosine with pure frequency modulation dc
+    dc_mod = 0.1*π
+
+    Δϕ = @. amp_mod*sin(2π*freq_mod*t) + dc_mod
+    signal_cos = cos.(Δϕ)
+    signal_sin = sin.(Δϕ)
+    
+    # High gain test    
+    dt = t[2]-t[1]
+    gain = 4e4
+    sigmoid_factor = 1e-1 # 0 = signal function
+    (phase, phase_offset) = phase_highgain(signal_cos, signal_sin, dt, gain, sigmoid_factor)
+
+    # test modulation signal retrieval
+    @test maximum((Δϕ - phase)/Δϕ) <= 100e-6 
+    @test(dc_mod ≈ phase_offset, atol=1e-2)
+
+
 end 

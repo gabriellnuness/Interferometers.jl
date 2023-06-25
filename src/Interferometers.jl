@@ -13,8 +13,7 @@ export quadrature_fit
 export quadrature_set
 
 
-include("michelson.jl")
-include("sagnac.jl")
+include("simulation_models.jl")
 include("phase_retrieval.jl")
 include("quadrature.jl")
 
