@@ -185,11 +185,11 @@ end
     dt = t[2]-t[1]
     gain = 4e4
     sigmoid_factor = 1e-1 # 0 = signal function
-    (phase, phase_offset) = phase_highgain(signal_cos, signal_sin, dt, gain, sigmoid_factor)
+    highgain = phase_highgain(signal_cos, signal_sin, dt, gain, sigmoid_factor)
 
     # test modulation signal retrieval
-    @test maximum((Δϕ - phase)/Δϕ) <= 100e-6 
-    @test(dc_mod ≈ phase_offset, atol=1e-2)
+    @test maximum((Δϕ - highgain.phase)/Δϕ) <= 100e-6 
+    @test(dc_mod ≈ highgain.offset, atol=1e-2)
 
 
     # Plot sliding modes method
@@ -199,9 +199,9 @@ end
     ax[2].plot(t, signal_sin)
         ax[2].set_ylabel("signal_sin")
     ax[3].plot(t, Δϕ, linewidth=5,color="black",alpha=0.2)
-    ax[3].plot(t, (phase .- phase_offset))
+    ax[3].plot(t, (highgain.phase .- highgain.offset))
         ax[3].set_ylabel("Phase retrieved") 
-        str = @sprintf("phase offset:%.3fπ", (phase_offset/π))
+        str = @sprintf("phase offset:%.3fπ", (highgain.offset/π))
         ax[3].legend(["Δϕ",str])
     suptitle("sliding modes method")
     
@@ -218,11 +218,11 @@ end
     dt = t[2]-t[1]
     gain = 4e4
     sigmoid_factor = 1e-1 # 0 = signal function
-    (phase, phase_offset) = phase_highgain(signal_cos, signal_sin, dt, gain, sigmoid_factor)
+    highgain = phase_highgain(signal_cos, signal_sin, dt, gain, sigmoid_factor)
 
     # test modulation signal retrieval
-    @test maximum((Δϕ - phase)/Δϕ) <= 100e-6 
-    @test(dc_mod ≈ phase_offset, atol=1e-2)
+    @test maximum((Δϕ - highgain.phase)/Δϕ) <= 100e-6 
+    @test(dc_mod ≈ highgain.offset, atol=1e-2)
 
 
 end 

@@ -1,22 +1,23 @@
 """
 `(phase, gain_ratio, dc1, dc2) = fit_quadrature(arr1, arr2)`
 
-This function fits an ellipse to the Lissajous curve of arr1 versus arr2
+Fits an ellipse to the Lissajous curve of `arr1` versus `arr2`
 and returns as output signals in quadrature (90 deg between them,
 a Lissajous circle).
-*Obs: The precision of this fitting impacts the phase retrieval error.
+**Obs: The precision of this fitting impacts the phase retrieval error.**
   
-inputs:
-    arr1, arr2              -> Interferometric signals out of phase [column vector]
+# parameters:
+*    `arr1`, `arr2`:    Interferometric signals out of phase [column vector]
 
-outputs:
-    phase                     -> Phase difference from quadrature (in rad)
-    gain_ratio                -> Gain proportion between arr1 and arr2, gain_ratio = A1*V1/(A2*V2);
-    dc1, dc2                -> Offsets of arr1 and arr2.
+# returns:
+*    `phase`:           Phase difference from quadrature (in rad)
+*    `gain_ratio`:      Gain proportion between arr1 and arr2, gain_ratio = A1*V1/(A2*V2);
+*    `dc1`, `dc2`:      Offsets of arr1 and arr2.
 
-ref: "HEYDEMANN, P. L. M. Determination and correction of 
-quadrature fringe measurement errors in interferometers. Applied Optics. 
-New York, v. 20, n 19, p. 3382-3384, 1981."
+# ref: 
+    "HEYDEMANN, P. L. M. Determination and correction of 
+    quadrature fringe measurement errors in interferometers. Applied Optics. 
+    New York, v. 20, n 19, p. 3382-3384, 1981."
 """
 function quadrature_fit(arr1::Vector, arr2::Vector)
       
@@ -39,28 +40,28 @@ function quadrature_fit(arr1::Vector, arr2::Vector)
     dc1     = (2*B*D-E*C) / (C^2-4*A*B)
     dc2     = (2*A*E-D*C) / (C^2-4*A*B)
     
-    (phase, gain_ratio, dc1, dc2)
+    (phase=phase, gain_ratio=gain_ratio, offset1=dc1, offset2=dc2)
 end
 
 
 """
-`(cos_signal sin_signal) = quadrature_set(arr1, arr2, phase, gain_ratio, dc1, dc2)`
+`quadrature_set(arr1, arr2, phase, gain_ratio, dc1, dc2)`
 
-This function is a subset of fit_quadrature.m function
-the inputs are the fitted values necessary to correct the
-quadrature.
+Modifies the signals to be in quadrature based on the values obtained previously from the fit.
 
-Input: 
-    phase           -> Phase difference from quadrature (in rad)
-    gain_ratio      -> Gain proportion between signal_1 and signal_2, gain_ratio = A1*V1/(A2*V2);
-    dc1, dc2      -> Offsets of signal_1 and signal_2.
+# parameters: ellipse fitted values
+*   `phase`: Phase difference from quadrature in rad. 
+*   `gain_ratio`: Gain proportion between signal_1 and signal_2, gain_ratio = A₁V₁/(A₂V₂);
+*   `dc1`, `dc2`: Offsets of signal_1 and signal_2.
 
-Output: cosine signal,
-            sine signal.
+# returns: named Tuple with corrected signals
+* cosine signal,
+* sine signal.
 
-ref: Felão, "High gain approach and sliding mode control
-      applied to quadrature interferometer", Thesis, UNESP,
-      2019. https://repositorio.unesp.br/handle/11449/190782.
+# ref:
+    Felão, "High gain approach and sliding mode control
+    applied to quadrature interferometer", Thesis, UNESP,
+    2019. https://repositorio.unesp.br/handle/11449/190782.
 """
 function quadrature_set(arr1, arr2, phase, gain_ratio, dc1, dc2)
 
@@ -68,15 +69,19 @@ function quadrature_set(arr1, arr2, phase, gain_ratio, dc1, dc2)
     cos_signal = @. arr1 - dc1;
     sin_signal = @. 1/cos(phase)*(cos_signal*sin(phase) + gain_ratio*(arr2-dc2));
 
-    (cos_signal, sin_signal)
+    (arr_cos = cos_signal, arr_sin = sin_signal)
 end
 
 
 """
-`(arr1_cos, arr2_sin) = make_cos_first(arr1, arr2, δ)`
+`make_cos_first(arr1, arr2, δ)`
 
 Check if signal is representative of a cosine or sine
 Make the first signal the cosine version.
+
+# parameters:
+*   `arr1`, `arr2`: input arrays.
+*   `δ`: distance between points of the Lissajous curve to take the vectors.
 
 The calculation is done through the rotation direction of the Lissajous figure
 if x: cos and y: sin, than the rotation direction is counter clockwise.
@@ -98,9 +103,9 @@ function make_cos_first(arr1::Vector, arr2::Vector, δ::Int)
         arr2_sin = arr1
 
         println("Inverted by make_cos_first()")
-        return (arr1_cos, arr2_sin)
+        return (arr_cos = arr1_cos, arr_sin = arr2_sin)
     end
     
     println("Not inverted by make_cos_first()")
-    (arr1, arr2)
+    (arr_cos = arr1, arr_sin = arr2)
 end
