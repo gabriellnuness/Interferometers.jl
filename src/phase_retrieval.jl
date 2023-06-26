@@ -1,13 +1,14 @@
 """
-`phase_highgain(arr_cos, arr_sin, dt, gain, e)`
+`phase_highgain(arr_cos, arr_sin, τ, gain, e)`
 
 Demodulates the interferometric phase by
 using the nonlinear control technique based on sliding-modes.
 
-# parameters: Interferometric signals in quadrature without offset
- *   `arr_cos`
- *   `arr_sin`
-                       
+# parameters: 
+*   `arr_cos`, `arr_sin`:   interferometric signals in quadrature without offset.
+*   `τ`:                    data sample period.
+*   `gain`:                 sliding modes control gain.
+*   `e`:                    sigmoid coefficient (0 -> signal function).                       
 
 # returns: named Tuple (phase, offset)
 *   `phase`:       Recovered phase
@@ -18,7 +19,7 @@ using the nonlinear control technique based on sliding-modes.
     control applied to quadrature interferometer". 2019.
     https://repositorio.unesp.br/handle/11449/190782
 """
-function phase_highgain(arr_cos::Vector, arr_sin::Vector, dt, gain, e)
+function phase_highgain(arr_cos::Vector, arr_sin::Vector, τ, gain, e)
     # TODO: review this function and implement tests
     control_phase = zeros(length(arr_cos))
     x1 = zeros(length(arr_cos)-1)
@@ -34,7 +35,7 @@ function phase_highgain(arr_cos::Vector, arr_sin::Vector, dt, gain, e)
         if i == 1
            control_phase[i+1] = 0 
         else
-           control_phase[i+1] = control_phase[i] + ((u[i-1]+u[i])*dt/2) # Euler integration
+           control_phase[i+1] = control_phase[i] + ((u[i-1]+u[i])*τ/2) # Euler integration
         end
             
     end
@@ -72,9 +73,8 @@ sigmoid(arr, e) = @. arr / (abs(arr) + e)
 Demodulates the interferometer phase with the arctangent method
 Δϕ = tan⁻¹(sin/cos) + m⋅π  
 
-# parameters: Interferometric signals in quadrature without offset
- *   `arr_cos`
- *   `arr_sin`
+# parameters: 
+ *   `arr_cos` and `arr_sin`: Interferometric signals in quadrature without offset.
                        
 
 # returns: named Tuple (phase, offset)
