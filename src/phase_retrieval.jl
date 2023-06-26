@@ -24,7 +24,7 @@ function phase_highgain(arr_cos::Vector, arr_sin::Vector, dt, gain, e)
         if i == 1
            control_phase[i+1] = 0 
         else
-           control_phase[i+1] = control_phase[i] + ((u[i-1]+u[i])*dt/2) # integration
+           control_phase[i+1] = control_phase[i] + ((u[i-1]+u[i])*dt/2) # Euler integration
         end
             
     end
