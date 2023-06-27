@@ -2,8 +2,7 @@
 `(phase, gain_ratio, dc1, dc2) = fit_quadrature(arr1, arr2)`
 
 Fits an ellipse to the Lissajous curve of `arr1` versus `arr2`
-and returns as output signals in quadrature (90 deg between them,
-a Lissajous circle).
+and returns as output signals in quadrature (90°  between them, i.e., a circle).
 **Obs: The precision of this fitting impacts the phase retrieval error.**
   
 # parameters:
@@ -11,8 +10,8 @@ a Lissajous circle).
 
 # returns:
 *    `phase`:           Phase difference from quadrature (in rad)
-*    `gain_ratio`:      Gain proportion between arr1 and arr2, gain_ratio = A1*V1/(A2*V2);
-*    `dc1`, `dc2`:      Offsets of arr1 and arr2.
+*    `gain_ratio`:      Gain proportion between `arr1` and `arr2`, gain_ratio = A₁V₁/(A₂V₂);
+*    `dc1`, `dc2`:      Offsets of `arr1` and `arr2`.
 
 # ref: 
     "HEYDEMANN, P. L. M. Determination and correction of 
