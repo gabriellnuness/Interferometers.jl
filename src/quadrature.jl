@@ -34,23 +34,10 @@ function quadrature_fit(arr1::Vector, arr2::Vector)
     # Thesis: eq (61)
     A = b[1]; B = b[2]; C = b[3]; D = b[4]; E = b[5] 
    
+    gain_ratio = sqrt(B/A)
+    phase = asin(C/(2*gain_ratio*A))
     dc1     = (2*B*D-E*C) / (C^2-4*A*B)
     dc2     = (2*A*E-D*C) / (C^2-4*A*B)
-
-    # check if sqrt result is complex
-    if B/A >= 0
-        gain_ratio = sqrt(B/A)
-    else
-        gain_ratio = 999
-    end
-    
-    # check if phase is not calculated correctly
-    arg = C/(2*gain_ratio*A)
-    if abs(arg) <= 1
-        phase = asin(arg)
-    else
-        phase = 999 
-    end
 
     (phase=phase, gain_ratio=gain_ratio, offset1=dc1, offset2=dc2)
 end
