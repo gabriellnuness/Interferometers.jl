@@ -42,13 +42,14 @@ end
     ϕ2 = -60
     signal_1_orig = @. dc1 + A1*cos(2π*10*t + deg2rad(ϕ1))
     signal_2_orig = @. dc2 + A2*cos(2π*10*t + deg2rad(ϕ2))
+    
     # correcting representation of sine and cosine
     (signal_1, signal_2) = make_cos_first(signal_1_orig, signal_2_orig, δ)
     
     (phase, gain_ratio, offset_1, offset_2) = quadrature_fit(signal_1, signal_2)
 
     (signal_cos, signal_sin) = quadrature_set(signal_1, signal_2, phase, gain_ratio, offset_1, offset_2)
-       
+    
     # Optional plots
     figure()
     plot(signal_1_orig, signal_2_orig) # original signal
@@ -70,6 +71,13 @@ end
 
 
 
+    # test named tuple as input of next function
+    quad_tuple = quadrature_fit(signal_1, signal_2)
+    (signal_cos_tuple, signal_sin_tuple) = quadrature_set(signal_1, signal_2, quad_tuple)
+
+    @test signal_cos == signal_cos_tuple
+    @test signal_sin == signal_sin_tuple
+       
 
 
     # non pure sine and cosine test

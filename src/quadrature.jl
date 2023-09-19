@@ -70,6 +70,9 @@ function quadrature_set(arr1, arr2, phase, gain_ratio, dc1, dc2)
 
     (arr_cos = cos_signal, arr_sin = sin_signal)
 end
+function quadrature_set(arr1, arr2, quad)
+    return quadrature_set(arr1, arr2, quad[1], quad[2], quad[3], quad[4])
+end
 
 
 """
