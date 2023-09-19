@@ -38,11 +38,10 @@ function quadrature_fit(arr1::Vector, arr2::Vector)
     dc2     = (2*A*E-D*C) / (C^2-4*A*B)
 
     # check if sqrt result is complex
-    arg = B/A
-    if arg < 0
-        gain_ratio = sqrt(Complex(arg))
+    if B/A >= 0
+        gain_ratio = sqrt(B/A)
     else
-        gain_ratio = sqrt(arg)
+        gain_ratio = 999
     end
     
     # check if phase is not calculated correctly
