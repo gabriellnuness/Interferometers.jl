@@ -149,8 +149,8 @@ end
     ax[3].plot(t, Δϕ, linewidth=5,color="black",alpha=0.2)
     ax[3].plot(t, phase)
         ax[3].set_ylabel("Phase retrieved") 
-        str = @sprintf("phase offset:%.3fπ", (phase_offset/π))
-        ax[3].legend(["Δϕ",str])
+        str = @sprintf("phase offset:%.2fpi", (phase_offset/π))
+        ax[3].legend([L"\Delta\phi",str])
     suptitle("arc tangent method")
 
 
@@ -209,8 +209,8 @@ end
     ax[3].plot(t, Δϕ, linewidth=5,color="black",alpha=0.2)
     ax[3].plot(t, (highgain.phase .- highgain.offset))
         ax[3].set_ylabel("Phase retrieved") 
-        str = @sprintf("phase offset:%.3fπ", (highgain.offset/π))
-        ax[3].legend(["Δϕ",str])
+        str = @sprintf("phase offset:%.2f pi", (highgain.offset/π))
+        ax[3].legend([L"$\Delta\phi$",str])
     suptitle("sliding modes method")
     
 
