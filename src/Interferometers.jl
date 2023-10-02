@@ -5,6 +5,7 @@ using LinearAlgebra
 # Simulation functions
 export michelson
 export sagnac
+export fringes
 # Phase recovery functions
 export phase_atan
 export phase_highgain
