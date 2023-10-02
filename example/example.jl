@@ -1,13 +1,39 @@
 using PyPlot
 using Interferometers
 
-λ = 1310e-9
-Δλ = 50e-9
-ΔL = 100e-6
-
+# Simulating spatial interference fringes
+λ = 1550e-9
+Δλ = 150e-9
+ΔL = 5e-6
 simout = fringes(λ, Δλ, ΔL, 1e-8)
 
+figure()
 plot(simout.length*1e6, simout.interferogram)
     xlabel(L"Optical path length ($\mu$m)")
     ylabel("Interference intensity")
     title("Low coherence interferogram")
+
+simout = fringes_gaussian(λ, Δλ, ΔL, 1e-8)
+
+figure()
+plot(simout.length*1e6, simout.interferogram)
+    xlabel(L"Optical path length ($\mu$m)")
+    ylabel("Interference intensity")
+    title("Low coherence interferogram")
+
+
+""" simulating different bandwidths """
+λ = 1550e-9
+Δλ = 40e-9
+ΔL = 5e-6
+simout = fringes_gaussian(λ, Δλ, ΔL, 1e-8)
+Δλ = 300e-9
+simout1 = fringes_gaussian(λ, Δλ, ΔL, 1e-8)
+
+figure()
+plot(simout.length*1e6, simout.interferogram)
+plot(simout1.length*1e6, simout1.interferogram)
+    xlabel(L"Optical path length ($\mu$m)")
+    ylabel("Interference intensity")
+    title("Low coherence interferogram\nscale factor change due to bandiwdth")
+    legend([L"$\Delta\lambda$ = 40 nm",L"$\Delta\lambda$ = 300 nm"])
