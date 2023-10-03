@@ -13,7 +13,7 @@
 *   `length`:           Physical length.
 *   `Interferogram`:    Normalized interferogram intensity.
 """
-function fringes(λ, Δλ, ΔL, ΔL_res=1e-6)
+function fringes(λ, Δλ, ΔL, ::Type{Square}, ΔL_res=1e-8)
 
     opl_range = range(start=-ΔL, stop=ΔL, step=ΔL_res) 
     wavelength_range = range(start=(λ-Δλ/2), stop=(λ+Δλ/2), length=size(opl_range,1)) 
@@ -30,15 +30,14 @@ function fringes(λ, Δλ, ΔL, ΔL_res=1e-6)
 end
 
 
-
 """ Spectrum input Gaussian filtered """
-function fringes_gaussian(λ, Δλ, ΔL, ΔL_res=1e-8)
+function fringes(λ, Δλ, ΔL, ::Type{Gaussian}=Gaussian, ΔL_res=1e-8)
 
-    Δλ = 2*Δλ
     opl_range = range(start=-ΔL, stop=ΔL, step=ΔL_res) 
-    wavelength_range = range(start=(λ-Δλ/2), stop=(λ+Δλ/2), length=size(opl_range,1)) 
     
-    gaus_filter = gaussian(wavelength_range, Δλ/2)
+    Δλ = 2*Δλ # expand λ simulation to consider Δλ as the FWHM.
+    wavelength_range = range(start=(λ-Δλ/2), stop=(λ+Δλ/2), length=size(opl_range,1)) 
+    gaus_filter = gaussian(wavelength_range, Δλ/2) # gaussian filter
 
     interferogram = zero(opl_range)
 

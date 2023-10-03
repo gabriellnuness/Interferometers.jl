@@ -4,8 +4,8 @@ using Interferometers
 # Simulating spatial interference fringes
 λ = 1550e-9
 Δλ = 150e-9
-ΔL = 5e-6
-simout = fringes(λ, Δλ, ΔL, 1e-8)
+ΔL = 50e-6
+simout = fringes(λ, Δλ, ΔL, Square)
 
 figure()
 plot(simout.length*1e6, simout.interferogram)
@@ -13,7 +13,7 @@ plot(simout.length*1e6, simout.interferogram)
     ylabel("Interference intensity")
     title("Low coherence interferogram")
 
-simout = fringes_gaussian(λ, Δλ, ΔL, 1e-8)
+simout = fringes(λ, Δλ, ΔL)
 
 figure()
 plot(simout.length*1e6, simout.interferogram)
@@ -26,9 +26,9 @@ plot(simout.length*1e6, simout.interferogram)
 λ = 1550e-9
 Δλ = 40e-9
 ΔL = 5e-6
-simout = fringes_gaussian(λ, Δλ, ΔL, 1e-8)
+simout = fringes(λ, Δλ, ΔL, 1e-8)
 Δλ = 300e-9
-simout1 = fringes_gaussian(λ, Δλ, ΔL, 1e-8)
+simout1 = fringes(λ, Δλ, ΔL, 1e-8)
 
 figure()
 plot(simout.length*1e6, simout.interferogram)
