@@ -73,6 +73,9 @@ sigmoid(arr, e) = @. arr / (abs(arr) + e)
 Demodulates the interferometer phase with the arctangent method
 Δϕ = tan⁻¹(sin/cos) + m⋅π  
 
+It is limited to π/2 between two samples instead of π by atan2(), 
+check unwrap() from DSP package.
+
 # parameters: 
  *   `arr_cos` and `arr_sin`: Interferometric signals in quadrature without offset.
                        
