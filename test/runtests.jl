@@ -2,6 +2,7 @@ using Interferometers
 using Test
 using PyPlot
 using Printf
+using DSP
 
 
 
@@ -234,3 +235,45 @@ end
 
 
 end 
+
+
+
+@testset "Unwrap algorithm from DSP" begin
+
+    # Testing with pure sine and cosine with pure frequency
+    fs = 1000
+    freq_mod = 10
+    amp_mod = 10π
+    dc_mod = 0.5π 
+
+    τ = 1/fs
+    t = 0 : τ : 1/freq_mod*2
+
+    Δϕ = @. amp_mod*sin(2π*freq_mod*t) + dc_mod
+    signal_cos = cos.(Δϕ)
+    signal_sin = sin.(Δϕ)
+
+    # arctangent 
+    (phase, phase_offset) = phase_atan(signal_cos, signal_sin)
+
+    # comparing with DSP unwrap algorithm
+    phase_raw = @. atan(signal_sin, signal_cos)
+    unwrapped_phase = unwrap(phase_raw)
+
+    close("all")
+    _, ax = subplots(3,1, figsize=(8,5))
+    ax[1].plot(t, Δϕ,linewidth=5,color="black",alpha=0.2)
+    ax[1].plot(t, phase, linewidth=2, "--")
+    ax[1].plot(t, unwrapped_phase)
+        ax[1].legend(["input","unwrap home","unwrap DSP"])
+        ax[1].set_ylabel("Phase [rad]")
+    ax[2].plot(t, phase_raw); ax[2].set_ylabel("atan2")
+    ax[3].plot(t, signal_cos,".-",markersize=3); ax[3].set_ylabel("input\nsignal")
+
+
+end
+
+
+@testset "artangent general tests" begin
+    include("test_arctangent.jl")
+end
