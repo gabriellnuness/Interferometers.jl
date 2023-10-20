@@ -131,30 +131,28 @@ function phase_atan(arr_cos::Vector, arr_sin::Vector)
         phase[i] = phase[i] + 2π*trig_circle_turns
 
     end 
-
-
-    # TODO: review theory about offset removal 
-    # Before recovering the phase, the algorithm works better
-    # works up to Δϕ = @. π*sin(2π*freq_mod*t) + 1.9*π
-    # at the bottom it works up to Δϕ = @. π*sin(2π*freq_mod*t) + 0.9*π
-    # However it never works with negative phase.
-
-    phase_offset = (maximum(phase) + minimum(phase)) / 2
-    turns_phase_offset = phase_offset/(2π)
     
-    incomplete_offset_turns = turns_phase_offset - floor(turns_phase_offset)
+    (offset, spurious_phase) = atan_phase_offset(phase)
+    phase = phase .- offset
     
-    if incomplete_offset_turns > 0.5
-        incomplete_offset_turns = 1-incomplete_offset_turns
-        spurious_phase = -incomplete_offset_turns*2π
-    else
-        spurious_phase = incomplete_offset_turns*2π
-    end
-
-    # removing offset level
-    final_phase_offset = phase_offset - spurious_phase
-    phase = phase .- final_phase_offset
-    
-
-    (phase=phase, offset=spurious_phase)
+    return (phase=phase, offset=spurious_phase)
 end
+
+
+
+function atan_phase_offset(phase)
+        offset = (maximum(phase) + minimum(phase)) / 2
+        turns = offset/(2π)      
+        incomplete_turns = turns - floor(turns)
+        
+        if incomplete_turns > 0.5
+            incomplete_turns = 1 - incomplete_turns # complement
+            spurious_phase = -incomplete_turns * 2π
+        else
+            spurious_phase = incomplete_turns * 2π
+        end
+
+       final_phase_offset = offset - spurious_phase
+
+       return (final_phase_offset, spurious_phase)
+    end

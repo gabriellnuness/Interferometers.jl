@@ -15,6 +15,7 @@ export phase_highgain
 export make_cos_first
 export quadrature_fit
 export quadrature_set
+export atan_phase_offset
 
 # filter types multiple dispatch
 abstract type specFilter end
