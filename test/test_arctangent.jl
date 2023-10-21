@@ -200,7 +200,7 @@ end
     x = 4π; f = 1e3; θ = deg2rad(80) ; ϕ₀ = 3π/4
     t_final = 2e-3
     
-    # limiting sample frequency: Φ < fs/(2f²)
+    # limiting sample frequency: Φ < fs⋅π/(2πf)
     fs_min = 2*x*f # atan from Lemes needs twice as fast sample rate
 
     f_sample = fs_min
