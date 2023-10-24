@@ -8,7 +8,7 @@ using the nonlinear control technique based on sliding-modes.
 *   `arr_cos`, `arr_sin`:   interferometric signals in quadrature without offset.
 *   `τ`:                    data sample period.
 *   `gain`:                 sliding modes control gain.
-*   `e`:                    sigmoid coefficient (0 -> signal function).                       
+*   `e`:                    sigmoid coefficient (e=0 -> signal function).                       
 
 # returns: named Tuple (phase, offset)
 *   `phase`:       Recovered phase
@@ -19,31 +19,31 @@ using the nonlinear control technique based on sliding-modes.
     control applied to quadrature interferometer". 2019.
     https://repositorio.unesp.br/handle/11449/190782
 """
-function phase_highgain(arr_cos::Vector, arr_sin::Vector, τ, gain, e)
-    # TODO: review this function and implement tests
-    control_phase = zeros(length(arr_cos))
+function phase_highgain(arr_cos::Vector, arr_sin::Vector, τ, gain, e=0)
+
+    ϕc = zeros(length(arr_cos))
     x1 = zeros(length(arr_cos)-1)
     f = zeros(length(arr_cos)-1)
     u = zeros(length(arr_cos)-1)
     
     for i = 1:length(arr_cos)-1
         
-        x1[i]   = arr_cos[i]*cos(control_phase[i]) - arr_sin[i]*sin(control_phase[i])
-        f[i]    = arr_cos[i]*sin(control_phase[i]) + arr_sin[i]*cos(control_phase[i])
-        u[i]    = -gain * sigmoid(x1[i]*f[i], e)
+        x1[i] = arr_cos[i]*cos(ϕc[i]) - arr_sin[i]*sin(ϕc[i])
+        f[i]  = arr_cos[i]*sin(ϕc[i]) + arr_sin[i]*cos(ϕc[i])
+        u[i]  = -gain * sigmoid(x1[i]*f[i], e)
 
         if i == 1
-           control_phase[i+1] = 0 
+           ϕc[i+1] = 0   # initial condition
         else
-           control_phase[i+1] = control_phase[i] + ((u[i-1]+u[i])*τ/2) # Euler integration
+           ϕc[i+1] = ϕc[i] + ((u[i-1]+u[i]) * τ/2) # Trapz
         end
             
     end
 
-    phase = -control_phase
-    spurious_phase = sum(phase)/length(phase)
+    ϕ = -ϕc
+    spurious_phase = sum(ϕ)/length(ϕ)
 
-    (phase=phase, offset=spurious_phase)
+    (phase = ϕ, offset = spurious_phase)
 
 end
 
@@ -55,13 +55,20 @@ end
 
 
 """
-sigmoid(arr, e) = @. arr / (abs(arr) + e)
+sigmoid(x, e) = @. x / (abs(x) + e)
 
 Sigmoid function of a signal.
 
-#parameters: `arr`
+#parameters: 
+* `x`: input value
+* `e`: sigmoid approximation
 """
-sigmoid(arr, e) = @. arr / (abs(arr) + e)
+function sigmoid(x, e)
+    if x==0
+        return 0
+    end
+    return (x / (abs(x) + e))
+end
 
 
 
