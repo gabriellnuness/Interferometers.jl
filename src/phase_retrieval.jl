@@ -159,3 +159,18 @@ function atan_phase_offset(phase)
 
        return (final_phase_offset, spurious_phase)
     end
+
+
+
+"""
+Maximum value between two phase samples that can still be unwrapped
+ϕ < fs⋅π/(2πf)
+"""
+function check_arctangent_lim_phase(fs,f;lim2sample=π)
+    maximum_phase =  fs*lim2sample/(2π*f)
+    return maximum_phase
+end
+function check_arctangent_lim_freq(ϕ,f;lim2sample=π)
+    min_fs =  2π*f*ϕ/lim2sample
+    return min_fs
+end
