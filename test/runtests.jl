@@ -2,12 +2,7 @@ using Interferometers
 using Test
 using Printf
 using DSP
-
-
-plot_flag = false
-if plot_flag
-    using PyPlot
-end
+using PyPlot
 
 
 @testset "Simulation" begin
@@ -158,7 +153,7 @@ end
         ax[3].plot(t, phase)
             ax[3].set_ylabel("Phase retrieved") 
             str = @sprintf("phase offset:%.2fpi", (phase_offset/π))
-            # ax[3].legend([L"\Delta\phi",str])
+            ax[3].legend([L"\Delta\phi",str])
         suptitle("arc tangent method")
     end
 
@@ -219,7 +214,7 @@ end
         ax[3].plot(t, (highgain.phase .- highgain.offset))
             ax[3].set_ylabel("Phase retrieved") 
             str = @sprintf("phase offset:%.2f pi", (highgain.offset/π))
-            # ax[3].legend([L"$\Delta\phi$",str])
+            ax[3].legend([L"$\Delta\phi$",str])
         suptitle("sliding modes method")
     end
 

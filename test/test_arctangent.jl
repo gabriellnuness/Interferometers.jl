@@ -1,15 +1,14 @@
 using Test
 using Interferometers
 using DSP
+using PyPlot
+
+plot_flag = false
 
 """
 Tests for arctangent phase unwrap method,
 including exact values from Lemes' thesis.
 """
-plot_flag = false
-if plot_flag
-    using PyPlot
-end
 
 @testset "Arctangent Lemes 1: ϕ₀<π, θ=0" begin
     x = 4π; f = 1e3; θ = 0 ; ϕ₀ = 3π/4
@@ -30,15 +29,15 @@ end
     if plot_flag
         figure(); plot(t, signal_cos); plot(t, signal_sin)
         figure(); plot(t, atan.(signal_sin./signal_cos)./π)
-            # legend(["atan"]); ylabel(L"phase [$\pi$ rad]"); ylim(-1,1)
+            legend(["atan"]); ylabel(L"phase [$\pi$ rad]"); ylim(-1,1)
         figure(); plot(t, atan.(signal_sin, signal_cos)./π)
-            # legend(["atan2"]); ylabel(L"phase [$\pi$ rad]")
+            legend(["atan2"]); ylabel(L"phase [$\pi$ rad]")
         figure()
             plot(t, ϕ./π, color="black", alpha=.2, linewidth=4)
             plot(t, unwrapped_phase./π)
             plot(t, (phase)./π, "--")
                 legend(["input", "atan2", "atan"])
-                # ylabel(L"phase [$\pi$ rad]")
+                ylabel(L"phase [$\pi$ rad]")
     end
 end
 
@@ -62,22 +61,22 @@ end
     if plot_flag
         figure(); plot(t, signal_cos); plot(t, signal_sin)
         figure(); plot(t, atan.(signal_sin./signal_cos)./π)
-            # legend(["atan"]); ylabel(L"phase [$\pi$ rad]"); ylim(-1,1)
+            legend(["atan"]); ylabel(L"phase [$\pi$ rad]"); ylim(-1,1)
         figure(); plot(t, atan.(signal_sin, signal_cos)./π)
-            # legend(["atan2"]); ylabel(L"phase [$\pi$ rad]")
+            legend(["atan2"]); ylabel(L"phase [$\pi$ rad]")
         figure()
             plot(t, ϕ./π, color="black", alpha=.2, linewidth=4)
             plot(t, unwrapped_phase./π)
             plot(t, (phase)./π, "--")
                 legend(["input", "atan2", "atan"])
-                # ylabel(L"phase [$\pi$ rad]")
+                ylabel(L"phase [$\pi$ rad]")
                 title("Without phase removal from atan2")
         figure()
             plot(t, ϕ./π, color="black", alpha=.2, linewidth=4)
             plot(t, (unwrapped_phase .- atan_phase_offset(unwrapped_phase)[1])./π)
             plot(t, (phase)./π, "--")
                 legend(["input", "atan2", "atan"])
-                # ylabel(L"phase [$\pi$ rad]")
+                ylabel(L"phase [$\pi$ rad]")
                 title("Removed phase offset from atan2")
     end
 end
@@ -104,22 +103,22 @@ end
     if plot_flag
         figure(); plot(t, signal_cos); plot(t, signal_sin)
         figure(); plot(t, atan.(signal_sin./signal_cos)./π)
-            # legend(["atan"]); ylabel(L"phase [$\pi$ rad]"); ylim(-1,1)
+            legend(["atan"]); ylabel(L"phase [$\pi$ rad]"); ylim(-1,1)
         figure(); plot(t, atan.(signal_sin, signal_cos)./π)
-            # legend(["atan2"]); ylabel(L"phase [$\pi$ rad]")
+            legend(["atan2"]); ylabel(L"phase [$\pi$ rad]")
         figure()
             plot(t, ϕ./π, color="black", alpha=.2, linewidth=4)
             plot(t, unwrapped_phase./π)
             plot(t, (phase)./π, "--")
                 legend(["input", "atan2", "atan"])
-                # ylabel(L"phase [$\pi$ rad]")
+                ylabel(L"phase [$\pi$ rad]")
                 title("Without phase removal from atan2")
         figure()
             plot(t, ϕ./π, color="black", alpha=.2, linewidth=4)
             plot(t, (unwrapped_phase .- atan_phase_offset(unwrapped_phase)[1])./π)
             plot(t, (phase)./π, "--")
                 legend(["input", "atan2", "atan"])
-                # ylabel(L"phase [$\pi$ rad]")
+                ylabel(L"phase [$\pi$ rad]")
                 title("Removed phase offset from atan2")
     end
 end
@@ -153,9 +152,9 @@ end
 
     if plot_flag
         figure(); plot(ϕ₀./π, ϕ_atan,".",markersize=2)
-            # xlabel(L"$\phi_{0}$"); ylabel(L"$\phi_{0}$ atan")
+            xlabel(L"$\phi_{0}$"); ylabel(L"$\phi_{0}$ atan")
         figure(); plot(ϕ₀./π, ϕ_atan2,".",markersize=2)
-            # xlabel(L"$\phi_{0}$"); ylabel(L"${\phi}_{0}$ atan2")
+            xlabel(L"$\phi_{0}$"); ylabel(L"${\phi}_{0}$ atan2")
     end
 end
 
@@ -225,7 +224,7 @@ end
             plot(t, (unwrapped_phase .- atan_phase_offset(unwrapped_phase)[1])./π)
             plot(t, (phase)./π, "--")
                 legend(["input", "atan2", "atan"])
-                # ylabel(L"phase [$\pi$ rad]")
+                ylabel(L"phase [$\pi$ rad]")
                 title("fs = $(round(fs_min/1000,digits=3)) kHz\nInstead of previous fs = 1.2495 MHz")
     end
 end
