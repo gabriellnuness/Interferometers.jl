@@ -22,22 +22,18 @@ using the nonlinear control technique based on sliding-modes.
 function phase_highgain(arr_cos::Vector, arr_sin::Vector, τ, gain, e=0)
 
     ϕc = zeros(length(arr_cos))
-    x1 = zeros(length(arr_cos)-1)
-    f = zeros(length(arr_cos)-1)
-    u = zeros(length(arr_cos)-1)
+    x1 = 0.0
+    f = 0.0
     
-    for i = 1:length(arr_cos)-1
+    ϕc[1] = 0.0π
+    for i = 2:length(arr_cos)
         
-        x1[i] = arr_cos[i]*cos(ϕc[i]) - arr_sin[i]*sin(ϕc[i])
-        f[i]  = arr_cos[i]*sin(ϕc[i]) + arr_sin[i]*cos(ϕc[i])
-        u[i]  = -gain * sigmoid(x1[i]*f[i], e)
+        x1 = arr_cos[i-1]*cos(ϕc[i-1]) - arr_sin[i-1]*sin(ϕc[i-1])
+        f  = -(arr_cos[i-1]*sin(ϕc[i-1]) + arr_sin[i-1]*cos(ϕc[i-1]))
+        u = -gain * sigmoid(x1*f, e)
 
-        if i == 1
-           ϕc[i+1] = 0   # initial condition
-        else
-           ϕc[i+1] = ϕc[i] + ((u[i-1]+u[i]) * τ/2) # Trapz
-        end
-            
+        ϕc[i] = ϕc[i-1] + (u * τ) # Euler
+   
     end
 
     ϕ = -ϕc
