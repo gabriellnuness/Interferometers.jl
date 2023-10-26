@@ -27,5 +27,6 @@ export Gaussian, Square
 include("simulation_models.jl")
 include("phase_retrieval.jl")
 include("quadrature.jl")
+include("integrators.jl")
 
 end

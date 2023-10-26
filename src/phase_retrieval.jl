@@ -21,32 +21,31 @@ using the nonlinear control technique based on sliding-modes.
 """
 function phase_highgain(arr_cos::Vector, arr_sin::Vector, τ, gain, e=0)
 
-    ϕc = zeros(length(arr_cos))
-    x1 = 0.0
-    f = 0.0
-    
-    ϕc[1] = 0.0π
+    ϕc = zeros(length(arr_cos))  
+    ϕc[1] = 10.0π
     for i = 2:length(arr_cos)
         
-        x1 = arr_cos[i-1]*cos(ϕc[i-1]) - arr_sin[i-1]*sin(ϕc[i-1])
-        f  = -(arr_cos[i-1]*sin(ϕc[i-1]) + arr_sin[i-1]*cos(ϕc[i-1]))
-        u = -gain * sigmoid(x1*f, e)
+        p = (arr_cos[i-1], arr_sin[i-1], gain, e)
 
-        ϕc[i] = ϕc[i-1] + (u * τ) # Euler
-   
+        # ϕc[i] = forward_euler(dϕc_dt, ϕc[i-1], τ, p) #(dy, y, dt, t=0)
+        ϕc[i] = rk4(dϕc_dt, ϕc[i-1], τ, p) #(fun, y, dt, p, t=0)       
+
     end
 
     ϕ = -ϕc
-    spurious_phase = sum(ϕ)/length(ϕ)
+    spurious_phase = sum(ϕ)/length(ϕ) # mean
 
-    (phase = ϕ, offset = spurious_phase)
-
+    return (phase = ϕ, offset = spurious_phase)
 end
 
 
-
-
-
+""" Control signal before integrator """
+function dϕc_dt(ϕc, p, t=0)
+    arr_cos, arr_sin, gain, e = p
+    x1  = arr_cos*cos(ϕc) - arr_sin*sin(ϕc)
+    f   = arr_cos*sin(ϕc) + arr_sin*cos(ϕc)
+    dϕc = -gain * sigmoid(-x1*f, e)
+end
 
 
 
