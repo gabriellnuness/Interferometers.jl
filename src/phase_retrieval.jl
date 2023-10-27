@@ -24,11 +24,8 @@ function phase_highgain(arr_cos::Vector, arr_sin::Vector, τ, gain; e=0, ic=0)
     ϕc = zeros(length(arr_cos))  
     ϕc[1] = ic
     for i = 1:length(arr_cos)-1
-        
         p = (arr_cos[i], arr_sin[i], gain, e)
-        # ϕc[i+1] = forward_euler(dϕc_dt, ϕc[i], τ, p) #(dy, y, dt, t=0)
-        ϕc[i+1] = rk4(dϕc_dt, ϕc[i], τ, p) #(dy, y, dt, p, t=0)       
-
+        ϕc[i+1] = rk4(du=ϕc_dot, u=ϕc[i], dt=τ, p=p) 
     end
 
     ϕ = -ϕc
@@ -39,11 +36,17 @@ end
 
 
 """ Sliding modes control signal before integrator """
-function dϕc_dt(ϕc, p, t=0)
+function ϕc_dot(u, p, t=0)
+    # du/dt = (u,t,p)
+    # u = [y1, y2, y3, ...]
+    ϕc = u
     arr_cos, arr_sin, gain, e = p
+
     x1  = arr_cos*cos(ϕc) - arr_sin*sin(ϕc)
     f   = arr_cos*sin(ϕc) + arr_sin*cos(ϕc)
     dϕc = -gain * sigmoid(-x1*f, e)
+
+    return dϕc
 end
 
 
