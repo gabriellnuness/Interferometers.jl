@@ -1,9 +1,9 @@
-function forward_euler(;du, u, dt, p=nothing, t=0)
+function integrate(::Type{Euler}; du, u, dt, p=nothing, t=0)
     u_next = u + (du(u,p,t) * dt)
     return u_next
 end
 
-function bs3(;du, u, dt, p=nothing, t=0)
+function integrate(::Type{BS3}; du, u, dt, p=nothing, t=0)
     k1 = du(u,p,t)
     k2 = du(u+1/2*dt*k1, p, t+1/2*dt)
     k3 = du(u+3/4*dt*k2, p, t+3/4*dt)
@@ -13,7 +13,7 @@ function bs3(;du, u, dt, p=nothing, t=0)
     return z_next
 end
 
-function rk4(;du, u, dt, p=nothing, t=0)
+function integrate(::Type{RK4}=RK4; du, u, dt, p=nothing, t=0)
     k1 = du(u,p,t)
     k2 = du(u+dt/2*k1, p, t+dt/2)
     k3 = du(u+dt/2*k2, p, t+dt/2)

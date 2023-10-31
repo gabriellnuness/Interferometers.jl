@@ -23,6 +23,13 @@ struct Gaussian <: specFilter end
 struct Square <: specFilter end
 export Gaussian, Square
 
+# Integrator for sliding mode multiple dispatch
+abstract type IntSolver end
+struct RK4 <: IntSolver end
+struct BS3 <: IntSolver end
+struct Euler <: IntSolver end
+export RK4, BS3, Euler
+
 
 include("simulation_models.jl")
 include("phase_retrieval.jl")
