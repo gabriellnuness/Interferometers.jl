@@ -1,7 +1,7 @@
 name = "Interferometers"
 uuid = "f258f33b-4c40-4009-a9dc-31b399225700"
 authors = ["Gabriel Nunes <nunesgfs@gmail.com>"]
-version = "0.1.5"
+version = "0.2.0"
 
 [deps]
 DSP = "717857b8-e6f2-59f4-9121-6e50c889abd2"
