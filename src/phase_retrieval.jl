@@ -19,7 +19,7 @@ using the nonlinear control technique based on sliding-modes.
     control applied to quadrature interferometer". 2019.
     https://repositorio.unesp.br/handle/11449/190782
 """
-function phase_highgain(arr_cos::Vector, arr_sin::Vector, τ, gain; e=0, ic=0, solver=RK4)
+function phase_highgain(arr_cos::Vector, arr_sin::Vector, τ, gain; e=0, ic=π/2, solver=RK4)
 
     ϕc = zeros(length(arr_cos))  
     ϕc[1] = ic
