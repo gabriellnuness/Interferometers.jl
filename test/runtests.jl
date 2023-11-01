@@ -12,6 +12,16 @@ using PyPlot
     @test michelson(deg2rad(90), 1, 1) == 1
     @test michelson(deg2rad(90), 0, 0) == 0
 
+
+    R = .7
+    λ = 1550e-9
+    L = range(start=0, stop=5e-6, length=10000)
+    spec = fabry_perot.(R, L, λ)
+    close("all")
+    plot(L*1e6, spec)
+        ylim(-0.2,1.2); xlabel("L [m]"); ylabel("Transmission")
+
+
 end
 
 @testset "Integrators" begin

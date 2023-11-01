@@ -5,6 +5,7 @@ using LinearAlgebra
 # Simulation functions
 export michelson
 export sagnac
+export fabry_perot
 export fringes
 export fringes_gaussian
 export gaussian

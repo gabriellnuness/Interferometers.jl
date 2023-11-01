@@ -71,6 +71,17 @@ function sagnac(t, τ, ϕs, ϕm)
 end
 
 
+
+"""
+    Simulation of a Fabry-Perot interferometer
+"""
+function fabry_perot(R, L, λ)
+    k = 2π/λ
+    return T = 1/(1+ 4R/((1-R)^2)*(sin(k*L)^2))
+end
+
+
+
 """
     Gaussian normalized function to filter spectrum
 """
