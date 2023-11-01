@@ -27,10 +27,10 @@ function phase_highgain(arr_cos::Vector, arr_sin::Vector, τ, gain; e=0, ic=0, s
         p = (arr_cos[i], arr_sin[i], gain, e)
         ϕc[i+1] = integrate(solver, du=ϕc_dot, u=ϕc[i], dt=τ, p=p)
     end
-    ϕ = -ϕc # ϕc = -Δϕ -ϕ₀ +kπ/2
+    ϕ = -ϕc .+ π/2 # ϕc = -Δϕ -ϕ₀ +kπ/2
     spurious_phase = sum(ϕ)/length(ϕ) # mean
 
-    return (phase = ϕ .+ π/2, offset = spurious_phase)
+    return (phase = ϕ, offset = spurious_phase)
 end
 
 

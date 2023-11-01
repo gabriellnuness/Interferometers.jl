@@ -228,3 +228,32 @@ end
                 title("fs = $(round(fs_min/1000,digits=3)) kHz\nInstead of previous fs = 1.2495 MHz")
     end
 end
+
+
+
+@testset "Arctangent remove phase unwrap offset from (-π,π)" begin    # first sample of the simulated phase is > 2π
+    for ϕ₀ = -0.99π:0.1:0.99π
+        x = 4π; f = 1e3; θ = deg2rad(80)
+        t_final = 2e-3
+        f_sample_min = ceil(2*f*x)
+        f_sample = 10f_sample_min
+
+        t = 0 : 1/f_sample : t_final
+        ϕ = @. ϕ₀ + x*sin(2π*f*t + θ) 
+        signal_cos = cos.(ϕ)
+        signal_sin = sin.(ϕ)
+
+        # arctangent Lemes
+        (phase, phase_offset) = phase_atan(signal_cos, signal_sin)
+
+        # unwrap function
+        phase_raw = @. atan(signal_sin, signal_cos)
+        unwrapped_phase = unwrap(phase_raw)
+        unwrapped_phase = unwrapped_phase .- atan_phase_offset(unwrapped_phase)[1]
+
+        mean_atan1 = (maximum(phase)+minimum(phase))/2
+        mean_atan2 = (maximum(unwrapped_phase)+minimum(unwrapped_phase))/2
+        @test(ϕ₀ ≈ mean_atan1, atol=1e-5)
+        @test(ϕ₀ ≈ mean_atan2, atol=1e-5)
+    end
+end

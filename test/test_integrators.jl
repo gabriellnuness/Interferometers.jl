@@ -1,3 +1,7 @@
+using Test
+using Interferometers
+using PyPlot
+
 
 @testset "Integrators: dy/dx= sin(2π*x)" begin 
     function fun(y, p, x)
@@ -77,16 +81,16 @@ end
         du = [dx, dy, dz]
         return du
     end
-    dt = 0.01
+    dt = 0.001
     t = 0:dt:50
     n = length(t)
     u_rk4 = zeros(n,3)
     u_bs3 = zeros(n,3)
     u_euler = zeros(n,3)
     u0 = [1,0,0]
-    u_rk4[1,:] = y0
-    u_euler[1,:] = y0
-    u_bs3[1,:] = y0
+    u_rk4[1,:] = u0
+    u_euler[1,:] = u0
+    u_bs3[1,:] = u0
     p = (10, 8/3, 28)
     for i = 1:n-1
         u_rk4[i+1,:] = Interferometers.integrate(du=fun, u=u_rk4[i,:], dt=dt, p=p, t=t[i])

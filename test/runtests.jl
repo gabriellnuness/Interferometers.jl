@@ -120,7 +120,6 @@ end
 
 
 @testset "Arctangent phase retrieval" begin
-
     # Testing with pure sine and cosine with pure frequency
     f = 60
     τ = 1/f
@@ -141,7 +140,6 @@ end
     @test maximum((Δϕ - phase)/Δϕ) <= 1e-10
     @test dc_mod - phase_offset <= 1e-10
 
-
     # Plot arctangent method
     _, ax = subplots(3,1)
     ax[1].plot(t, signal_cos)
@@ -154,8 +152,6 @@ end
         str = @sprintf("phase offset:%.2fpi", (phase_offset/π))
         ax[3].legend([L"\Delta\phi",str])
     suptitle("arc tangent method")
-
-
 
     # dc offset
     dc_mod = 0.1*π
@@ -171,17 +167,39 @@ end
     @test maximum((Δϕ - phase)/Δϕ) <= 1e-10
     @test dc_mod - phase_offset <= 1e-10
 
-
-
 end
 
-@testset "Sliding modes phase retrieval" begin
 
-    # Testing with pure sine and cosine with pure frequency
+
+@testset "Artangent general tests" begin
+    include("test_arctangent.jl")
+end
+
+
+
+
+
+@testset "Sliding modes phase retrieval" begin
+    function plot_highgain()
+        # Plot sliding modes method
+        _, ax = subplots(3,1, figsize=(5,5))
+        ax[1].plot(t, signal_cos)
+            ax[1].set_ylabel("signal_cos")
+        ax[2].plot(t, signal_sin)
+            ax[2].set_ylabel("signal_sin")
+        ax[3].plot(t, Δϕ, linewidth=3,color="black",alpha=0.2)
+        ax[3].plot(t, (highgain.phase))
+            ax[3].set_ylabel("Phase retrieved") 
+            str = @sprintf("phase offset:%.2f pi", (highgain.offset/π))
+            ax[3].legend([L"$\Delta\phi$",str])
+        suptitle("sliding modes method")
+        # test modulation signal retrieval
+    end
+
+    """ Testing with pure sine and cosine with pure frequency """
     f = 60
     τ = 1/f
     t = 0 : τ/1000 : τ*2
-
     freq_mod = 2*f
     amp_mod = 10π
     dc_mod = 0.0*π
@@ -189,35 +207,23 @@ end
     Δϕ = @. amp_mod*sin(2π*freq_mod*t) + dc_mod
     signal_cos = cos.(Δϕ)
     signal_sin = sin.(Δϕ)
-    
     # High gain test    
     dt = t[2]-t[1]
     gain_min = amp_mod*2π*freq_mod
-    gain = gain_min + 1000
+    gain = gain_min + 50
     sigmoid_factor = 0 # 0 = signal function
-    highgain = phase_highgain(signal_cos, signal_sin, dt, gain, sigmoid_factor)
-
-
-    # Plot sliding modes method
-    _, ax = subplots(3,1)
-    ax[1].plot(t, signal_cos)
-        ax[1].set_ylabel("signal_cos")
-    ax[2].plot(t, signal_sin)
-        ax[2].set_ylabel("signal_sin")
-    ax[3].plot(t, Δϕ, linewidth=3,color="black",alpha=0.2)
-    ax[3].plot(t, (highgain.phase .- highgain.offset))
-        ax[3].set_ylabel("Phase retrieved") 
-        str = @sprintf("phase offset:%.2f pi", (highgain.offset/π))
-        ax[3].legend([L"$\Delta\phi$",str])
-    suptitle("sliding modes method")
-
-    # TODO: CHECK AND FIX THE OFFSET OF SLIDING MODES
-    # test modulation signal retrieval
-    # @test maximum((Δϕ - highgain.phase)/Δϕ) <= 100e-6 
-    # @test(dc_mod ≈ highgain.offset, atol=1e-2)
-
+    highgain = phase_highgain(signal_cos, signal_sin, dt, gain,
+                                solver=BS3, e=sigmoid_factor, ic=π/2)
+    plot_highgain()
     
-    # Testing with pure sine and cosine with pure frequency modulation dc
+    @test maximum((Δϕ - highgain.phase)/Δϕ) <= 100e-6 
+    @test(dc_mod ≈ highgain.offset, atol=1e-2)
+
+
+
+
+
+    """ Testing with pure sine and cosine with pure frequency modulation dc """
     dc_mod = 0.1*π
 
     Δϕ = @. amp_mod*sin(2π*freq_mod*t) + dc_mod
@@ -228,47 +234,50 @@ end
     dt = t[2]-t[1]
     gain = 4e4
     sigmoid_factor = 1e-1 # 0 = signal function
-    highgain = phase_highgain(signal_cos, signal_sin, dt, gain, sigmoid_factor)
+    highgain = phase_highgain(signal_cos, signal_sin, dt, gain, e=sigmoid_factor,solver=BS3,ic=π/2)
+    plot_highgain()
 
     # test modulation signal retrieval
-    # @test maximum((Δϕ - highgain.phase)/Δϕ) <= 100e-6 
-    # @test(dc_mod ≈ highgain.offset, atol=1e-2)
+    @test maximum((Δϕ - highgain.phase)/Δϕ) <= 100e-6 
+    @test(dc_mod ≈ highgain.offset, atol=1e-2)
+   
+   
+   
+   
+   
+   
+    """ Testing modulation dc from -2π to 2π """
+    dc_mod = -2π : 2π/100 : 2π
+    offset = zeros(length(dc_mod))
+    for (i, dc_mod) in enumerate(dc_mod)
+        Δϕ = @. amp_mod*sin(2π*freq_mod*t) + dc_mod
+        signal_cos = cos.(Δϕ)
+        signal_sin = sin.(Δϕ)
+        
+        # High gain test    
+        dt = t[2]-t[1]
+        gain = 4e4
+        sigmoid_factor = 1e-1 # 0 = signal function
+        highgain = phase_highgain(signal_cos, signal_sin, dt, gain, e=sigmoid_factor,solver=BS3,ic=π/2)
+        # plot_highgain()
+        offset[i] = highgain.offset
+        
+        # test modulation signal retrieval
+        if  -π/2 < dc_mod < π/2 
+            @test maximum((Δϕ - highgain.phase)/Δϕ) <= 100e-6 
+            @test(dc_mod ≈ highgain.offset, atol=1e-2)
+        end
+    end
 
-
+    figure()
+    plot(dc_mod./π, cos.(dc_mod .+ π/2), color="black",alpha=0.5)
+    plot(dc_mod./π, offset./π, ".",markersize=2)
+        # ylim(-.6,.6)
+        ylabel(L"SMC offset [$\pi$ rad]"); xlabel(L"input phase offset [$\pi$ rad]")
+        title(L"Phase offset SMC recovery\\$\Delta\phi = \Phi \sin(2\pi{\cdot}f{\cdot}t)+\phi_{dc}$")
 end 
 
 
-
-@testset "Artangent general tests" begin
-    include("test_arctangent.jl")
-end
-
-
-
-@testset "Remove phase unwrap offset from (-π,π)" begin
-    # first sample of the simulated phase is > 2π
-    for ϕ₀ = -0.99π:0.1:0.99π
-        x = 4π; f = 1e3; θ = deg2rad(80)
-        t_final = 2e-3
-        f_sample_min = ceil(2*f*x)
-        f_sample = 10f_sample_min
-
-        t = 0 : 1/f_sample : t_final
-        ϕ = @. ϕ₀ + x*sin(2π*f*t + θ) 
-        signal_cos = cos.(ϕ)
-        signal_sin = sin.(ϕ)
-
-        # arctangent Lemes
-        (phase, phase_offset) = phase_atan(signal_cos, signal_sin)
-
-        # unwrap function
-        phase_raw = @. atan(signal_sin, signal_cos)
-        unwrapped_phase = unwrap(phase_raw)
-        unwrapped_phase = unwrapped_phase .- atan_phase_offset(unwrapped_phase)[1]
-
-        mean_atan1 = (maximum(phase)+minimum(phase))/2
-        mean_atan2 = (maximum(unwrapped_phase)+minimum(unwrapped_phase))/2
-        @test(ϕ₀ ≈ mean_atan1, atol=1e-5)
-        @test(ϕ₀ ≈ mean_atan2, atol=1e-5)
-    end
+@testset "Sliding modes general tests" begin
+    include("test_sliding_modes.jl")
 end
