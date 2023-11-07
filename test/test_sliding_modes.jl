@@ -1,11 +1,20 @@
 using Test
 using Interferometers
 
+custom_plot_colors =   ["#4063d8"
+                        "#9558b2"
+                        "#389826"
+                        "#cb3c33"
+                        "#17becf"
+                        "#e377c2"
+                        "#8c564b"
+                        "#7f7f7f"
+                        "#bcbd22"]
 
 
 @testset "Sliding modes: Minimum gain test" begin
     # close("all")
-    τ = 1e-5; ϕ₀_amp = 1; f₀ = 3; f = 500; Δϕ_amp = 1 
+    τ = 2e-6; ϕ₀_amp = 1; f₀ = 3; f = 500; Δϕ_amp = 1 
     t  = 0:τ:0.005
     n = length(t)
     ϕ₀ = @. ϕ₀_amp*sin(2π*f₀*t)
@@ -16,7 +25,7 @@ using Interferometers
 
     gain_min = 2π*f₀*ϕ₀_amp + 2π*f*Δϕ_amp
     arr_gain = 0:100:30*gain_min
-    e = range(start=0,stop=1e-1,length=11)
+    e = range(start=0,stop=1e-1,length=6)
     max_error = zeros(size(arr_gain))
     _,ax1 = subplots()
     _,ax2 = subplots()
@@ -55,8 +64,8 @@ end
 
 
 
-@testset "Sliding modes: sigmoid error and gain RK4" begin
-    τ = 1e-6; ϕ₀_amp = 1; f₀ = 3; f = 500; Δϕ_amp = 1 
+@testset "Sliding modes: sigmoid error and gain and solvers" begin
+    τ = 10e-6; ϕ₀_amp = 1; f₀ = 3; f = 500; Δϕ_amp = 1 
     t  = 0:τ:0.005
     n = length(t)
     ϕ₀ = @. ϕ₀_amp*sin(2π*f₀*t)
@@ -65,61 +74,83 @@ end
     A1 = 1;    V1 = 1;
     arr_cos = A1*V1*cos.(ϕ); arr_sin = A1*V1*sin.(ϕ)
 
+    solver= BS3
     gain_min = 2π*f₀*ϕ₀_amp + 2π*f*Δϕ_amp
 
-    arr_gain = 0:200:30*gain_min
-    e = range(start=0,stop=1e-1,length=10)
+    arr_gain = 0:200:45*gain_min
+    e = range(start=0,stop=1e-1,length=6) # stop=1e-1
 
     max_error = zeros(size(arr_gain))
     min_error_e = zeros(size(e))
     min_gain_e = zeros(size(e))
+
+    _,ax1 = subplots()
     for (j, e) in enumerate(e)
         for (i, gain) in enumerate(arr_gain)
 
-            phase = phase_highgain(arr_cos, arr_sin, τ, gain, e=e, ic=0, solver=RK4)
+            phase = phase_highgain(arr_cos, arr_sin, τ, gain, e=e, solver=solver)
             
             ϕc = -phase.phase
             max_error[i] = maximum(abs.(ϕ[Int(floor(n/2)):end] .+ ϕc[Int(floor(n/2)):end]))
-            if e == -0.1 && gain == -321800
-                figure(1)
+            #Euler e == 0.1 && gain == 24800  
+            #BS3 e == 0.1 && gain == 36600  
+            #RK4 e == 0.1 && gain == 20000  
+            if e == 0.1 && gain == 24800  
+            figure()
                 plot(t, -ϕc, label=L"$-\phi_c + \pi/2$")
                 plot(t, ϕ, label="input")
-                    ylabel("Phases"); title("Gain=$(round(gain,digits=0)), dt=$(round(τ*1e6,digits=0)) us"); legend()
+                    ylabel("Phases")
+                    title("solver=$solver, gain=$(round(gain,digits=0))\ndt=$(round(τ*1e6,digits=0)) us, sigm=$e")
+                    legend()
                 ax = twinx()
-                plot(t, ϕ.+ϕc, color="gray",label="error")
-                    legend(); ylim(-0.6,0.6); xlim(0.003, 0.005)
+                ax.plot(t, ϕ.+ϕc, color="gray",label="error")
+                    ax.legend()
+            end
+            if e == 0 && gain == 3200  
+            figure()
+                plot(t, -ϕc, label=L"$-\phi_c + \pi/2$")
+                plot(t, ϕ, label="input")
+                    ylabel("Phases")
+                    title("solver=$solver, gain=$(round(gain,digits=0))\ndt=$(round(τ*1e6,digits=0)) us, sigm=$e")
+                    legend()
+                ax = twinx()
+                ax.plot(t, ϕ.+ϕc, color="gray",label="error")
+                    ax.legend()
             end
 
         end
-        figure(2)
-        plot(arr_gain, max_error, label="$(round(e,digits=3))")
-            title("dt=$(round(τ*1e6,digits=0)) us, sigm = $(e)")
+        ax1.plot(arr_gain, max_error, label="$(round(e,digits=3))")
+            ax1.set_title("solver=$solver, dt=$(round(τ*1e6,digits=0)) us")
         
         index = argmin(max_error)
         min_error_e[j] = max_error[index]
         min_gain_e[j] = arr_gain[index]
 
     end
-    figure(2)
-    vlines(gain_min,0,2,linewidth=1,color="red",label="minimum gain")
-        ylabel("Absolute error [rad]"); xlabel("Gain"); yscale("log"); xscale("log")
-        legend()
-        grid(which="minor")
+    ax1.vlines(gain_min,0,2,linewidth=1,color="red",label="minimum gain")
+        ax1.set_ylabel("Absolute error [rad]")
+        ax1.set_xlabel("Gain"); ax1.set_yscale("log"); ax1.set_xscale("log")
+        ax1.legend()
+        ax1.grid(which="minor")
+
+    
+    min_gain_e[1] = gain_min
+    fit = Interferometers.fit_line(e, min_gain_e./gain_min)
+    coef = fit[2][1]
+    println(coef)
 
     figure()
     plot(e, min_error_e)
         xlabel(L"sigmoid factor $\varepsilon$")
-        ylabel("Minimum absolute error [rad]")#, color=custom_plot_colors[1])
+        ylabel("Minimum absolute error [rad]",color=custom_plot_colors[1])#, color=custom_plot_colors[1])
     ax = twinx()
-    ax.plot(e, min_gain_e, color="tab:red")#, color=custom_plot_colors[2])
-        ylabel("Gain for minimum error", color="tab:red")#, color=custom_plot_colors[2])
-        # gca().spines["right"].set_visible(true)
+    ax.plot(e, min_gain_e, color=custom_plot_colors[2])#, color=custom_plot_colors[2])
+    ax.plot(e, fit[1].*gain_min, color="tab:red")#, color=custom_plot_colors[2])
+        ylabel("Gain for minimum error", color=custom_plot_colors[2])#, color=custom_plot_colors[2])
+        gca().spines."right".set_visible(true)
+        title("solver=$solver, dt=$(τ*1e6) us\ncoef=$(round(coef/10, digits=2)) gain/(0.1e)")
     
 end
-
-
-
-
 
 
 
@@ -143,7 +174,6 @@ end
         ϕc = -phase.phase .+ π/2        # ϕ + ϕ₀ + ϕc = π/2
 
         @test(maximum(abs.(ϕ .+ ϕc)/π) ≈ 1/2, atol=2e-1)
-        #TODO: check x1 and f convergence to x1=0 and f = -1 or +1
         _,ax = subplots(4,1,figsize=(5,5))
             ax[1].plot(t, -ϕc, label="-control")
             ax[1].plot(t, ϕ, label="input")
@@ -233,7 +263,6 @@ end
         ϕc = -phase.phase
 
         offset[i] = phase.offset
-        # TODO: implement test to check equilibrium points
 
     end
     figure()

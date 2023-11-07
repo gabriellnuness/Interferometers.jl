@@ -3,7 +3,7 @@ using Interferometers
 using DSP
 using PyPlot
 
-plot_flag = false
+plot_flag = true
 
 """
 Tests for arctangent phase unwrap method,
