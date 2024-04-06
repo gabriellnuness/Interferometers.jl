@@ -1,3 +1,5 @@
+# Run this script in the main Julia Environment
+# ]activate
 using PyPlot
 using Interferometers
 
@@ -26,9 +28,9 @@ plot(simout.length*1e6, simout.interferogram)
 λ = 1550e-9
 Δλ = 40e-9
 ΔL = 5e-6
-simout = fringes(λ, Δλ, ΔL, 1e-8)
+simout = fringes(λ, Δλ, ΔL)
 Δλ = 300e-9
-simout1 = fringes(λ, Δλ, ΔL, 1e-8)
+simout1 = fringes(λ, Δλ, ΔL)
 
 figure()
 plot(simout.length*1e6, simout.interferogram)

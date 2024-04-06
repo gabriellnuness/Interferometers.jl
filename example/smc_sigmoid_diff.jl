@@ -1,3 +1,5 @@
+# Script to simulate the effect of the acquisition rate and sigmoid factor 
+# on the optimal gain
 using Test
 using Interferometers
 
