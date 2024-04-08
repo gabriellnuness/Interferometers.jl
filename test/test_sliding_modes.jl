@@ -200,6 +200,36 @@ end
     end
 
 
+    function thesis_figure_16()
+        # testing different acquisition rate to increasing white noise
+        τ_arr = [1e-4, 1e-5, 1e-6]
+        figure()
+
+        for τ in τ_arr
+            ϕ₀_amp = 1; f₀ = 3; f = 500; Δϕ_amp = 1 
+            A1 = 1;    V1 = 1;
+            t  = 0:τ:1
+            ϕ₀ = @. ϕ₀_amp*sin(2π*f₀*t)
+            Δϕ = @. Δϕ_amp*sin(2π*f*t)
+            ϕ = Δϕ .+ ϕ₀
+            arr_cos = A1*V1*cos.(ϕ); arr_sin = A1*V1*sin.(ϕ)
+            # gain = 2π*f₀*ϕ₀_amp + 2π*f*Δϕ_amp
+            gain = 3200
+            e = 0
+            phase = phase_highgain(arr_cos, arr_sin, τ, gain, e=e, ic=π/2, solver=BS3)
+            ϕc = -phase.phase
+
+            plot(t, A1*V1*cos.(ϕ.+ϕc.+π/2),
+                linewidth=0.4, label="dt=$(round(τ*1e6,digits=0)) us")
+        end
+
+        ylabel("A₁V₁cos(Δϕ+ϕ₀+ϕc)")
+        ylim(-1,1)
+        grid()
+        legend()
+
+    end
+    thesis_figure_16()
 end
 
 
