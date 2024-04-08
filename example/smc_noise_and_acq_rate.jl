@@ -7,6 +7,9 @@ using Statistics
 using FFTW
 using PyPlot
 
+"""
+Johnson noise formula implementation
+"""
 function white_noise(Δf=1)
     kb = 1.380649*10^(-23)
     T = 300 # ≈25°C
@@ -15,18 +18,21 @@ function white_noise(Δf=1)
     return voltage_rms
 end
 
-f = range(1, 1e6, 1000)
+f = range(1, 1e6, 10000)
 white_noise.(f)
 
 figure()
 plot(f, white_noise.(f))
     xlabel("Frequency")
     ylabel("RMS voltage noise")
+    xscale("log")
 
 
-# Firstly, create a random noise with the rms value
-# the rms value of a signal with zero mean is the standard deviation
+
 function make_signal()
+    # Firstly, create a random noise with the rms value
+    # the rms value of a signal with zero mean is the standard deviation
+
     fs = 1_000
     t_max = 100
     t_arr = range(0, t_max, t_max*fs-1)
@@ -46,33 +52,159 @@ function make_signal()
         ax[2].set_xlim(0, fs/2)
         # ax[2].set_yscale("log")
 end
-close("all")
 make_signal()
 
 
 
+function make_noisy_signal()
 
-# testing different acquisition rate to increasing white noise
-ϕ₀_amp = 1; f₀ = 3; f = 500; Δϕ_amp = 1 
-τ = 2e-6
-t  = 0:τ:0.005
-ϕ₀ = @. ϕ₀_amp*sin(2π*f₀*t)
-Δϕ = @. Δϕ_amp*sin(2π*f*t)
-ϕ = Δϕ .+ ϕ₀
-A1 = 1;    V1 = 1;
-arr_cos = A1*V1*cos.(ϕ); arr_sin = A1*V1*sin.(ϕ)
-gain = 2π*f₀*ϕ₀_amp + 2π*f*Δϕ_amp
-e = 0
+    τ = 1e-6
+    ϕ₀_amp = 1; f₀ = 3; f = 500; Δϕ_amp = 1 
+    A1 = 1;    V1 = 1;
+    t  = 0:τ:0.1
+    ϕ₀ = @. ϕ₀_amp*sin(2π*f₀*t)
+    Δϕ = @. Δϕ_amp*sin(2π*f*t)
+    ϕ = Δϕ .+ ϕ₀
+    arr_cos_noise = 5e3*white_noise(1/τ)*randn(length(ϕ))
+    arr_sin_noise = 5e3*white_noise(1/τ)*randn(length(ϕ))
+    arr_cos = A1*V1*cos.(ϕ)
+    arr_sin = A1*V1*sin.(ϕ)
+    
+    figure()
+    plot(arr_cos)
+    plot(arr_cos + arr_cos_noise)
 
-phase = phase_highgain(arr_cos, arr_sin, τ, gain, e=e, ic=π/2, solver=BS3)
-ϕc = -phase.phase
+    gain = 3200
+    e = 0
 
-figure()
-    plot(t, -ϕc, label=L"$-\phi_c + \pi/2$")
-    plot(t, ϕ, label="input")
-        ylabel("Phases")
-        title("gain=$(round(gain,digits=0)), dt=$(round(τ*1e6,digits=0)) us, e=$(round(e,digits=3))")
-        legend()
-    ax1 = twinx()
-    ax1.plot(t, ϕ.+ϕc, color="gray", label="error")
-    ax1.legend()
+    phase = phase_highgain(arr_cos, arr_sin, τ, gain, e=e, ic=π/2, solver=BS3)
+    ϕc = -phase.phase
+
+    arr_cos = A1*V1*cos.(ϕ) .+ arr_cos_noise
+    arr_sin = A1*V1*sin.(ϕ) .+ arr_sin_noise
+    phase = phase_highgain(arr_cos, arr_sin, τ, gain, e=e, ic=π/2, solver=BS3)
+    ϕc_noisy = -phase.phase
+    
+    figure()
+    plot(t, A1*V1*cos.(ϕ.+ϕc_noisy.+π/2),
+        linewidth=0.4, label="w/ noise")
+    plot(t, A1*V1*cos.(ϕ.+ϕc.+π/2),
+        linewidth=0.4, label="dt=$(round(τ*1e6,digits=0)) us")
+    ylabel("A₁V₁cos(Δϕ+ϕ₀+ϕc)")
+    ylim(-1,1)
+    grid()
+    legend()
+
+end
+make_noisy_signal()
+
+
+
+
+
+
+
+
+
+
+
+
+function noise_test()
+    # using ifog 3x3 signal "amplitude"
+    # testing different acquisition rate to increasing white noise
+
+    τ_arr = range(1/100, 1/1_000_000, 10000)
+    peak2peak = zeros(size(τ_arr))
+    peak2peak_noise = zeros(size(τ_arr))
+
+    # figure()
+    for (i, τ) in enumerate(τ_arr)
+        ϕ₀_amp = 1; f₀ = 1;
+        Δϕ_amp = 10; f = 3;
+        A1 = 1;    V1 = 1;
+        t  = 0:τ:0.5
+        ϕ₀ = @. ϕ₀_amp*sin(2π*f₀*t)
+        Δϕ = @. Δϕ_amp*sin(2π*f*t)
+        ϕ = Δϕ .+ ϕ₀
+        arr_cos = A1*V1*cos.(ϕ); arr_sin = A1*V1*sin.(ϕ)
+        arr_cos_noise = 5e3*white_noise(1/τ)*randn(length(ϕ))
+        arr_sin_noise = 5e3*white_noise(1/τ)*randn(length(ϕ))
+
+        gain = 2π*f₀*ϕ₀_amp + 2π*f*Δϕ_amp
+        gain = gain*1.05
+        e = 0
+
+        phase = phase_highgain(arr_cos, arr_sin, τ, gain, e=e, ic=π/2, solver=BS3)
+        ϕc = -phase.phase
+        peak2peak[i] = maximum(A1*V1*cos.(ϕ.+ϕc.+π/2))-minimum(A1*V1*cos.(ϕ.+ϕc.+π/2))
+
+        arr_cos = A1*V1*cos.(ϕ) .+ arr_cos_noise
+        arr_sin = A1*V1*sin.(ϕ) .+ arr_sin_noise
+        phase = phase_highgain(arr_cos, arr_sin, τ, gain, e=e, ic=π/2, solver=BS3)
+        ϕc_noise = -phase.phase
+        peak2peak_noise[i] = maximum(A1*V1*cos.(ϕ.+ϕc_noise.+π/2))-minimum(A1*V1*cos.(ϕ.+ϕc_noise.+π/2))
+
+    end
+
+    f = 1 ./τ_arr
+    figure()
+    plot(f, peak2peak, label="clean")
+    plot(f, peak2peak_noise, label="noisy")
+        xlabel("Frequency [Hz]")
+        ylabel("peak to peak [V]")
+        xscale("log")
+
+    ax = twinx()
+    ax.plot(f, white_noise.(f), color="black")
+
+end
+noise_test()
+
+
+
+
+
+
+
+function lissajous_test(phase_mod = 100)
+    # checking how noisy can the signal be and still allow the identification by
+    # the lissajous figure.
+
+    t = 0:0.001:0.5
+
+    # assigning input signals as cosine or sine 
+    Δϕ_amp = deg2rad(phase_mod)
+    f = 3
+    A1 = 1;    V1 = 1;
+    A2 = 2;    V2 = 0.8
+    dc1 = 1; dc2 = 2
+    Δϕ = @. Δϕ_amp*sin(2π*f*t)
+    ϕ = Δϕ
+    ϕ1 = deg2rad(-120)
+    ϕ2 = deg2rad(120)
+    signal_1 = dc1 .+ A1*V1*cos.(ϕ .+ ϕ1)
+    signal_2 = dc2 .+ A2*V2*cos.(ϕ .+ ϕ2)
+    
+    # correcting representation of sine and cosine    
+    (phase, gain_ratio, offset_1, offset_2) = quadrature_fit(signal_1, signal_2)
+
+    (signal_cos, signal_sin) = quadrature_set(signal_1, signal_2, phase, gain_ratio, offset_1, offset_2)
+    
+    # Optional plots
+    figure()
+    plot(signal_1, signal_2) # original signal   
+    plot(signal_cos, signal_sin) # original signal   
+        axis("equal"); title("Lissajous")
+        legend(["Original", "In quadrature"])
+        ylim(-5,5)
+        xlim(-5,5)
+    figure()
+        plot(signal_1)
+        plot(signal_2)
+
+    println("phase=$(rad2deg(phase))\nratio=$(gain_ratio)\ndc1=$offset_1)\ndc2=$(offset_2)")
+
+
+end
+lissajous_test()
+lissajous_test(10)
