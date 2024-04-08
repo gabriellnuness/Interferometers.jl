@@ -1,5 +1,6 @@
 using Test
 using Interferometers
+using PyPlot
 
 custom_plot_colors =   ["#4063d8"
                         "#9558b2"
