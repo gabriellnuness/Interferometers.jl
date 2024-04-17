@@ -6,6 +6,7 @@ using Interferometers
 using Statistics
 using FFTW
 using PyPlot
+using DSP
 
 """
 Johnson noise formula implementation
@@ -90,13 +91,101 @@ function make_noisy_signal()
         linewidth=0.4, label="w/ noise")
     plot(t, A1*V1*cos.(ϕ.+ϕc.+π/2),
         linewidth=0.4, label="dt=$(round(τ*1e6,digits=0)) us")
-    ylabel("A₁V₁cos(Δϕ+ϕ₀+ϕc)")
+    # ylabel("A₁V₁cos(Δϕ+ϕ₀+ϕc)")
+    ylabel(L"$A_1 V_1 \cos(\Delta\phi+\phi_0+\phi_c)$")
     ylim(-1,1)
     grid()
     legend()
 
 end
 make_noisy_signal()
+
+
+function make_quantized_signal()
+
+    τ = 1e-6
+    ϕ₀_amp = 1; f₀ = 3; f = 500; Δϕ_amp = 1 
+    A1 = 1;    V1 = 1;
+    t  = 0:τ:0.01
+    ϕ₀ = @. ϕ₀_amp*sin(2π*f₀*t)
+    Δϕ = @. Δϕ_amp*sin(2π*f*t)
+    ϕ = Δϕ .+ ϕ₀
+
+    arr_cos = A1*V1*cos.(ϕ)
+    arr_cos_quant = round.(A1*V1*cos.(ϕ), digits=2)
+    
+    figure()
+    plot(arr_cos, label="perfect")
+    plot(arr_cos_quant, label="quantized")
+        legend()
+end
+make_quantized_signal()
+
+
+
+function make_noisy_quantized_signal()
+
+    τ = 1e-6
+    ϕ₀_amp = 1; f₀ = 3; f = 500; Δϕ_amp = 1 
+    A1 = 1;    V1 = 1;
+    t  = 0:τ:0.01
+    ϕ₀ = @. ϕ₀_amp*sin(2π*f₀*t)
+    Δϕ = @. Δϕ_amp*sin(2π*f*t)
+    ϕ = Δϕ .+ ϕ₀
+
+    arr_cos_noise = 5e3*white_noise(1/τ)*randn(length(ϕ))
+    arr_sin_noise = 5e3*white_noise(1/τ)*randn(length(ϕ))
+    arr_cos = A1*V1*cos.(ϕ)
+    arr_sin = A1*V1*sin.(ϕ)
+    arr_cos_quant = round.(A1*V1*cos.(ϕ), digits=2)
+    arr_sin_quant = round.(A1*V1*sin.(ϕ), digits=2)
+    fcut = 5000
+    arr_cos_quant_filt = filtfilt(digitalfilter(Lowpass(fcut, fs=1/τ), Butterworth(2)), arr_cos_quant)
+    arr_sin_quant_filt = filtfilt(digitalfilter(Lowpass(fcut, fs=1/τ), Butterworth(2)), arr_sin_quant)
+    
+    
+    figure()
+    plot(arr_cos + arr_cos_noise, label="noisy")
+    plot(arr_cos_quant, label="quantized")
+    plot(arr_cos_quant_filt, label="quantized filtered")
+    plot(arr_cos, label="perfect")
+        legend()
+
+    gain = 3200
+    e = 0
+
+    phase = phase_highgain(arr_cos, arr_sin, τ, gain, e=e, ic=π/2, solver=BS3)
+    ϕc = -phase.phase
+
+    arr_cos = A1*V1*cos.(ϕ) .+ arr_cos_noise
+    arr_sin = A1*V1*sin.(ϕ) .+ arr_sin_noise
+    phase = phase_highgain(arr_cos, arr_sin, τ, gain, e=e, ic=π/2, solver=BS3)
+    ϕc_noisy = -phase.phase
+    
+    phase = phase_highgain(arr_cos_quant, arr_sin_quant, τ, gain, e=e, ic=π/2, solver=BS3)
+    ϕc_quant = -phase.phase
+
+    phase = phase_highgain(arr_cos_quant_filt, arr_sin_quant_filt, τ, gain, e=e, ic=π/2, solver=BS3)
+    ϕc_quant_filt = -phase.phase
+
+    
+    figure()
+    plot(t, A1*V1*cos.(ϕ.+ϕc_noisy.+π/2),
+        linewidth=0.4, label="noisy")
+    plot(t, A1*V1*cos.(ϕ.+ϕc_quant.+π/2),
+        linewidth=0.4, label="quantized")
+    plot(t, A1*V1*cos.(ϕ.+ϕc_quant_filt.+π/2),
+        linewidth=0.4, label="quantized filtered")
+    plot(t, A1*V1*cos.(ϕ.+ϕc.+π/2),
+        linewidth=0.4, label="dt=$(round(τ*1e6,digits=0)) us")
+    # ylabel("A₁V₁cos(Δϕ+ϕ₀+ϕc)")
+    ylabel(L"$A_1 V_1 \cos(\Delta\phi+\phi_0+\phi_c)$")
+    ylim(-1,1)
+    grid()
+    legend()
+
+end
+make_noisy_quantized_signal()
 
 
 
