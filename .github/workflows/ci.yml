@@ -16,8 +16,8 @@ jobs:
       fail-fast: false
       matrix:
         version:
-          - '1.7'  # minimum julia version
-          - '1'    # latest stable 1.x
+          - '1.7'
+          - '1'
           - 'nightly'
         os:
           - windows-latest
@@ -26,11 +26,11 @@ jobs:
         python-version: ['3.9']
         
     steps:
-      - uses: actions/checkout@v2
+      - uses: actions/checkout@v4
 
-      # Python setup for matplotlib
+      # Python setup
       - name: Set up Python ${{ matrix.python-version }}
-        uses: actions/setup-python@v2
+        uses: actions/setup-python@v5
         with:
           python-version: ${{ matrix.python-version }}
 
@@ -45,11 +45,9 @@ jobs:
         with:
           version: ${{ matrix.version }}
 
-      # Caching for faster builds
+      # Caching
       - name: Cache Julia artifacts
-        uses: actions/cache@v2
-        env:
-          cache-name: cache-artifacts
+        uses: actions/cache@v3
         with:
           path: |
             ~/.julia/artifacts
@@ -61,7 +59,7 @@ jobs:
             ${{ runner.os }}-
 
       - name: Cache Julia packages
-        uses: actions/cache@v2
+        uses: actions/cache@v3
         with:
           path: |
             ~/.julia/packages
@@ -73,18 +71,18 @@ jobs:
             ${{ runner.os }}-
 
       # Build and test
-      - uses: julia-actions/julia-buildpkg@v1
+      - uses: julia-actions/julia-buildpkg@latest
         env:
           PYTHON: python
 
-      - uses: julia-actions/julia-runtest@v1
+      - uses: julia-actions/julia-runtest@latest
 
-      - uses: julia-actions/julia-processcoverage@v1
+      - uses: julia-actions/julia-processcoverage@latest
 
       # Failure notification
       - name: Notify on failure
         if: failure() && github.event_name == 'pull_request'
-        uses: actions/github-script@v5
+        uses: actions/github-script@v6
         with:
           script: |
             github.rest.issues.createComment({
