@@ -1,0 +1,14 @@
+{
+  "title": "Interferometers.jl",
+  "description": "Simulation of interferometric signals and phase modulations.",
+  "creators": [
+    {
+      "name": "Gabriel F. S. Nunes",
+      "affiliation": "Aeronautics Institute of Technology (ITA)",
+      "orcid": "0000-0001-6802-1332"
+    }
+  ],
+  "license": "MIT",
+  "keywords": ["julia", "optics", "simulation", "interferometers"],
+  "version": "0.2.1"
+}
